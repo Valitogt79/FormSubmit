@@ -73,7 +73,7 @@
             //console.log($input, pattern);
 
             if (pattern && $input.value !== "") {
-              console.log("el input tiene patrón");
+              //console.log("el input tiene patrón");
               let regex = new RegExp(pattern);
               return !regex.exec($input.value)
                 ? d.getElementById($input.name).classList.add("is-active")
@@ -90,19 +90,39 @@
 
         d.addEventListener("submit", (e) => {
           e.preventDefault();
-          alert("Enviado Formulario");
+          //alert("Enviado Formulario");
           const $loader = d.querySelector(".contact-form-loader"),
             $response = d.querySelector(".contact-form-response");
 
           $loader.classList.remove("none");
 
-          //Simulando la peticion de envio de formulario
-          setTimeout(() => {
-            $loader.classList.add("none");
-            $response.classList.remove("none");
-            $form.reset();
-            setTimeout(() => $response.classList.add("none"), 3000);
-          }, 3000);
+          //* Agregando Fetch para el envio del formulario
+          fetch("https://formsubmit.co/ajax/oalonzo@gmail.com", {
+            method: "POST",
+            body: new FormData(e.target),
+          })
+            .then((res) => (res.ok ? res.json() : Promise.reject(res)))
+            .then((json) => {
+              console.log(json);
+              $loader.classList.add("none");
+              $response.classList.remove("none");
+              $response.innerHTML = `<p>${json.message}</p>`;
+              $form.reset();
+            })
+            .catch((err) => {
+              //console.log(err);
+              let message =
+                err.statusText ||
+                "Ocurrió un Error la enviar el formlario, Intenta Nuevamente";
+              $response.innerHTML = `<p>Error ${err.stats}: ${message}</p>`;
+            })
+
+            .finally(() =>
+              setTimeout(() => {
+                $response.classList.add("none");
+                $response.innerHTML = "";
+              }, 3000)
+            );
         });
       }
 
